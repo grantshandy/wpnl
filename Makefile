@@ -1,12 +1,12 @@
-all: web release
+all: frontend release
 
-web:
+frontend:
 	cd web && npm run build && cd ..
 	
-release: web
+release: frontend
 	cargo b --release
 	
-run: web
+run: frontend
 	cargo r
 	
 dev:
