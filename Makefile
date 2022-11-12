@@ -8,6 +8,6 @@ release: frontend
 	
 run: frontend
 	cargo r
-	
+
 dev:
 	cargo watch -s "make run"

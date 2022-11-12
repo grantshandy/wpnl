@@ -1,2 +1,7 @@
 /target
 Cargo.lock
+
+/web/package-log.json
+/web/node_modules/
+/web/dist/
+*.mjs
