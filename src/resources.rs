@@ -1,69 +1,68 @@
-use std::{sync::Arc, time::Duration};
+use std::time::Duration;
 
-use actix_web::{get, web, Responder};
-use actix_web_lab::sse::{self, Data};
+use actix_web::{get, web, HttpRequest, HttpResponse};
 use log::error;
-use serde::Serialize;
-use sysinfo::{System, SystemExt};
-use tokio::{sync::Mutex, time};
+use prost::Message;
+use sysinfo::{CpuExt, SystemExt};
+use tokio::time;
 
-use crate::AppState;
-
-#[derive(Serialize)]
-struct Stats {
-    total_memory: u64,
-    free_memory: u64,
-    available_memory: u64,
-    used_memory: u64,
-    total_swap: u64,
-    used_swap: u64,
-}
+use crate::{
+    types::{Cpu, Memory, Stats, Swap},
+    AppState,
+};
 
 #[get("/resources")]
-pub async fn broadcast(data: web::Data<AppState>) -> impl Responder {
-    let (tx, rx) = sse::channel(2);
+pub async fn broadcast(
+    req: HttpRequest,
+    stream: web::Payload,
+    data: web::Data<AppState>,
+) -> HttpResponse {
+    let (resp, mut session, mut _msg_stream) =
+        actix_ws::handle(&req, stream).expect("failed to start websocket");
 
-    let info = Arc::new(Mutex::new(System::default()));
+    let system = data.system.clone();
+    let tick_length = data.args.tick_length.clone();
 
     tokio::spawn(async move {
         loop {
-            time::sleep(Duration::from_millis(data.args.tick_length)).await;
+            time::sleep(Duration::from_millis(tick_length)).await;
 
-            info.lock().await.refresh_memory();
+            system.lock().await.refresh_memory();
+            system.lock().await.refresh_cpu();
 
-            let outer_info = info.lock().await;
+            let outer_info = system.lock().await;
 
-            let system = Stats {
-                total_memory: outer_info.total_memory(),
-                free_memory: outer_info.free_memory(),
-                available_memory: outer_info.available_memory(),
-                used_memory: outer_info.used_memory(),
-                total_swap: outer_info.total_swap(),
-                used_swap: outer_info.used_swap(),
+            let stats = Stats {
+                memory: Some(Memory {
+                    total_memory: outer_info.total_memory() as i64,
+                    available_memory: outer_info.available_memory() as i64,
+                    free_memory: outer_info.free_memory() as i64,
+                    used_memory: outer_info.used_memory() as i64,
+                }),
+                swap: Some(Swap {
+                    total_swap: outer_info.total_swap() as i64,
+                    used_swap: outer_info.used_swap() as i64,
+                }),
+                cpu: outer_info
+                    .cpus()
+                    .iter()
+                    .map(|cpu| Cpu {
+                        usage: cpu.cpu_usage(),
+                    })
+                    .collect(),
+                tick_length: tick_length as i64,
             };
 
             drop(outer_info);
 
-            let json = match serde_json::to_string(&system) {
-                Ok(data) => data,
-                Err(err) => {
-                    error!("Error serializing sysinfo as json: {err}");
+            let bytes = stats.encode_to_vec();
 
-                    "{}".to_string()
-                }
-            };
-
-            let data = Data::new(json);
-
-            if let Err(err) = tx.send(data).await {
-                if err.to_string() != "channel closed" {
-                    error!("Error sending sysinfo to user: {err}");
-                }
-
+            if let Err(err) = session.binary(bytes).await {
+                error!("error sending to client: {err}");
                 break;
             };
         }
     });
 
-    return rx;
+    resp
 }

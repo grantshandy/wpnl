@@ -1,20 +1,17 @@
 <script lang="ts">
 	import axios from "axios";
+  import { parse } from "protobufjs";
+  import { proto } from "../proto.ts";
 
-	interface Info {
-		name: string;
-		kernel_version: string;
-		os_version: string;
-		host_name: string;
-		neofetch: string;
-	}
-
-	let info: Info = null;
+	let info = null;
 	let error: string = null;
+	
+	let root = parse(proto, { keepCase: false }).root;
+	let infoProto = root.lookupType("Info");
 
-	axios("/info", { responseType: "json" })
+	axios("/info", { responseType: "arraybuffer" })
 		.then((response) => {
-			info = response.data;
+			info = infoProto.decode(new Uint8Array(response.data));
 		})
 		.catch((e) => {
 			error = e;
@@ -23,27 +20,25 @@
 
 <main>
 	{#if info}
-		<div class="">
-			{#if info.host_name}
-				<p>Hostname: {info.host_name}</p>
-			{/if}
-			{#if info.name}
-				<p>Operating System: {info.name}</p>
-			{/if}
-			{#if info.kernel_version}
-				<p>Kernel Version: {info.kernel_version}</p>
-			{/if}
-			{#if info.os_version}
-				<p>Operating System Version: {info.os_version}</p>
-			{/if}
-			{#if info.neofetch}
-				<p>Neofetch:</p>
-				<pre>{info.neofetch}</pre>
-			{/if}
-		</div>
+	<div class="">
+		{#if info.hostName}
+		<p>Hostname: {info.hostName}</p>
+		{/if}
+		{#if info.name}
+		<p>Operating System: {info.name}</p>
+		{/if}
+		{#if info.kernelVersion}
+		<p>Kernel Version: {info.kernelVersion}</p>
+		{/if}
+		{#if info.osVersion}
+		<p>Operating System Version: {info.osVersion}</p>
+		{/if}
+	</div>
 	{:else if error}
-		<p class="font-bold text-red-500">Error: {error}</p>
+	<p class="font-bold text-red-500">Error: {error}</p>
 	{:else}
-		<p>Loading...</p>
+  <div class="w-full h-full grid place-items-center">
+    <p class="font-semibold text-lg">Loading...</p>
+  </div>
 	{/if}
 </main>

@@ -1,5 +1,6 @@
 /target
 Cargo.lock
+src/resources.proto
 
 /web/package-log.json
 /web/node_modules/

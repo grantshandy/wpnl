@@ -1,43 +1,34 @@
 <script lang="ts">
-  import MemoryDoughnut from "./MemoryDoughnut.svelte";
-  import SwapDoughnut from "./SwapDoughnut.svelte";
+  import { parse } from "protobufjs";
+  import { proto } from "../proto.ts";
 
-  function formatFileSize(bytes: number, decimalPoint: number): string {
-    if (bytes == 0) return "0 Bytes";
-    var k = 1000,
-      dm = decimalPoint || 2,
-      sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"],
-      i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
-  }
+  import Memory from "./Memory.svelte";
 
-  interface Stats {
-    total_memory: number;
-    free_memory: number;
-    available_memory: number;
-    used_memory: number;
-    total_swap: number;
-    used_swap: number;
-  }
+  let root = parse(proto, { keepCase: false }).root;
+  let statsProto = root.lookupType("Stats");
 
-  let statsSource: EventSource = new EventSource("/resources");
-  let sysinfo: Stats = null;
+  let resources = new WebSocket(`ws://${window.location.host}/resources`);
+  let sysinfo = null;
   let error: string = null;
 
-  statsSource.onmessage = (event) => {
-    sysinfo = JSON.parse(event.data);
+  resources.binaryType = "arraybuffer";
+  resources.onmessage = (event) => {
+    let bytes = new Uint8Array(event.data);
+    
+    sysinfo = statsProto.decode(bytes);
   };
 </script>
 
 <main>
   {#if sysinfo}
-    <div class="w-full grid grid-cols-3 gap-3">
-      <MemoryDoughnut sysinfo={sysinfo} />
-      <SwapDoughnut sysinfo={sysinfo} />
-    </div>
+  <div class="w-full">
+    <Memory { sysinfo } />
+  </div>
   {:else if error}
-    <p class="text-red-500 font-bold">Error: {error}</p>
+  <p class="text-red-500 font-bold">Error: {error}</p>
   {:else}
-    <p>Loading...</p>
+  <div class="w-full h-full grid place-items-center">
+    <p class="font-semibold text-lg">Loading...</p>
+  </div>
   {/if}
 </main>

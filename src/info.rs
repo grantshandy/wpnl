@@ -1,19 +1,12 @@
-use actix_web::{get, HttpResponse};
-use log::error;
-use serde::Serialize;
-use sysinfo::{System, SystemExt};
+use actix_web::{get, web::Data, HttpResponse};
+use prost::Message;
+use sysinfo::SystemExt;
 
-#[derive(Serialize)]
-struct Info {
-    name: Option<String>,
-    kernel_version: Option<String>,
-    os_version: Option<String>,
-    host_name: Option<String>,
-}
+use crate::{types::Info, AppState};
 
 #[get("/info")]
-pub async fn info() -> HttpResponse {
-    let system = System::default();
+pub async fn info(data: Data<AppState>) -> HttpResponse {
+    let system = data.system.lock().await;
 
     let info = Info {
         name: system.name(),
@@ -22,14 +15,7 @@ pub async fn info() -> HttpResponse {
         host_name: system.host_name(),
     };
 
-    let json: String = match serde_json::to_string(&info) {
-        Ok(json) => json,
-        Err(err) => {
-            error!("Error parsing info json: {err}");
+    drop(system);
 
-            "{}".to_string()
-        }
-    };
-
-    HttpResponse::Ok().body(json)
+    HttpResponse::Ok().body(info.encode_to_vec())
 }
