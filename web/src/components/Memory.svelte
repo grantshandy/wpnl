@@ -18,7 +18,7 @@
     CategoryScale,
     LineElement,
     LinearScale,
-    PointElement,
+    PointElement
   );
 
   export let sysinfo = null;
@@ -112,55 +112,49 @@
 
 <main>
   {#if sysinfo.memory && sysinfo.swap}
-    <div class="w-full grid grid-cols-2 md:grid-cols-3 grid-rows-2 gap-2">
-      <div
-        class="col-span-2 md:col-span-1 row-span-1 md:row-span-2 grid grid-cols-2 md:grid-cols-1 grid-rows-1 md:grid-rows-2 gap-2"
-      >
-        <div
-          class="bg-slate-600 rounded-md shadow-md p-3 text-center space-y-2"
-        >
-          <h3 class="text-xl font-bold">Memory</h3>
-          <Doughnut
-            class="mx-2"
-            data={memoryDoughnutData}
-            options={defaultDoughnutOptions}
-          />
-          <p class="font-semibold">
-            {formatFileSize(sysinfo.memory.usedMemory, 2)} ({(
-              (sysinfo.memory.usedMemory / sysinfo.memory.totalMemory) *
-              100
-            ).toFixed(2)}%) of {formatFileSize(sysinfo.memory.usedMemory, 2)}
-          </p>
-        </div>
-        <div
-          class="bg-slate-600 rounded-md shadow-md p-3 text-center space-y-2"
-        >
-          <h3 class="text-xl font-bold">Swap</h3>
-          <Doughnut
-            class="mx-2"
-            data={swapDoughnutData}
-            options={defaultDoughnutOptions}
-          />
-          <p class="font-semibold">
-            {formatFileSize(sysinfo.swap.usedSwap, 2)} ({(
-              (sysinfo.swap.usedSwap / sysinfo.swap.totalSwap) *
-              100
-            ).toFixed(2)}%) of {formatFileSize(sysinfo.swap.totalSwap, 2)}
-          </p>
-        </div>
+    <div class="w-full grid grid-cols-2 md:grid-cols-4 gap-2">
+      <div class="bg-slate-600 rounded-md shadow-md p-3 text-center space-y-2">
+        <h3 class="text-xl font-bold">Memory</h3>
+        <Doughnut
+          class="mx-2"
+          data={memoryDoughnutData}
+          options={defaultDoughnutOptions}
+        />
+        <p class="font-semibold text-sm">
+          {formatFileSize(sysinfo.memory.usedMemory, 2)} ({(
+            (sysinfo.memory.usedMemory / sysinfo.memory.totalMemory) *
+            100
+          ).toFixed(2)}%) of {formatFileSize(sysinfo.memory.totalMemory, 2)}
+        </p>
+      </div>
+      <div class="bg-slate-600 rounded-md shadow-md p-3 text-center space-y-2">
+        <h3 class="text-xl font-bold">Swap</h3>
+        <Doughnut
+          class="mx-2 w-full"
+          data={swapDoughnutData}
+          options={defaultDoughnutOptions}
+        />
+        <p class="font-semibold text-sm">
+          {formatFileSize(sysinfo.swap.usedSwap, 2)} ({(
+            (sysinfo.swap.usedSwap / sysinfo.swap.totalSwap) *
+            100
+          ).toFixed(2)}%) of {formatFileSize(sysinfo.swap.totalSwap, 2)}
+        </p>
       </div>
       <div
-        class="bg-slate-600 rounded-md shadow-md p-3 text-center col-span-2 row-span-1 md:row-span-2"
+        class="bg-slate-600 rounded-md shadow-md p-3 text-center col-span-2"
       >
         <div class="w-full flow-root items-center align-middle px-1">
-          <h3 class="float-left font-semibold text-lg">Memory and Swap History</h3>
+          <h3 class="float-left font-semibold text-lg">
+            Memory and Swap History
+          </h3>
           <div class="float-right h-full flex space-x-2">
             <div class="flex items-center space-x-1">
-              <div class="w-4 h-4 rounded-full bg-[#F7464A]"/>
+              <div class="w-4 h-4 rounded-full bg-[#F7464A]" />
               <p class="text-sm italic">Memory</p>
             </div>
             <div class="flex items-center space-x-1">
-              <div class="w-4 h-4 rounded-full bg-[#46BFBD]"/>
+              <div class="w-4 h-4 rounded-full bg-[#46BFBD]" />
               <p class="text-sm italic">Swap</p>
             </div>
           </div>
