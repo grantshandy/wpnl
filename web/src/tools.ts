@@ -6,6 +6,8 @@ export const defaultDoughnutOptions = {
   },
 };
 
+export const chartColors: string[] = ["#F7464A", "#46BFBD"];
+
 export function formatFileSize(bytes: number, decimalPoint: number): string {
   if (bytes == 0) return "0 Bytes";
   var k = 1000,
