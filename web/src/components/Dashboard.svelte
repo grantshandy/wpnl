@@ -23,7 +23,7 @@
       <div class="w-full flex">
         <h1 class="grow text-3xl font-bold">Admin Panel</h1>
         <button
-          class="bg-slate-700 rounded-md shadow-md hover:shadow-lg px-2 py-1 font-bold"
+          class="bg-base02 rounded-md shadow-md hover:shadow-lg px-2 py-1 font-bold"
           on:click={() => logOut()}>Log Out</button
         >
       </div>
@@ -32,7 +32,7 @@
           {#each pages as page}
             {#if page == currentpage}
               <button
-                class="px-2 py-1 font-bold bg-slate-700 rounded-tr-md rounded-tl-md"
+                class="px-2 py-1 font-bold bg-base02 rounded-tr-md rounded-tl-md"
                 >{page}</button
               >
             {:else}
@@ -43,7 +43,7 @@
             {/if}
           {/each}
         </div>
-        <div class="w-full bg-slate-700 rounded-md shadow-md p-3">
+        <div class="w-full bg-base02 rounded-md shadow-md p-3">
           {#if currentpage == "Resources"}
             <Resources />
           {:else if currentpage == "Info"}

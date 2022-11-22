@@ -4,9 +4,21 @@ export const defaultDoughnutOptions = {
       display: false,
     },
   },
+  borderColor: "#586e75",
+  borderWidth: 0,
+  cutout: "30%",
 };
 
-export const chartColors: string[] = ["#F7464A", "#46BFBD"];
+export const chartColors: string[] = [
+  "#dc322f",
+  "#268bd2",
+  "#b58900",
+  "#cb4b16",
+  "#d33682",
+  "#6c71c4",
+  "#2aa198",
+  "#859900",
+];
 
 export function formatFileSize(bytes: number, decimalPoint: number): string {
   if (bytes == 0) return "0 Bytes";
